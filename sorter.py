@@ -1,9 +1,4 @@
 def sort(images):
-    """returns tuple
-    (
-        (image, size, pos)
-    )
-    """
     result = []
     prevItem = None
 
@@ -11,7 +6,7 @@ def sort(images):
         size = (img.width(), img.height())
         item = SortItem(img, size)
         if prevItem is not None:
-            item.pos = (item.pos[0], prevItem.size[1])
+            item.pos = (item.pos[0], prevItem.size[1] + prevItem.pos[1])
 
         result.append(item)
         prevItem = item
