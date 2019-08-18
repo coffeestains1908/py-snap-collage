@@ -25,13 +25,9 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        
-        scene = QGraphicsScene(self)
-        view = QGraphicsView(scene)
-        self.scene = scene
-        self.setCentralWidget(view)
 
         self.title = 'SnapCollage'
+        self.size = (350, 350)
 
         self.images = []
         self.isSnip = False
@@ -56,6 +52,11 @@ class MainWindow(QMainWindow):
         pass
 
     def show_image(self):
+        scene = QGraphicsScene(self)
+        view = QGraphicsView(scene)
+        self.scene = scene
+        self.setCentralWidget(view)
+
         if len(self.images):
             sorted = sorter.sort(self.images)
 
@@ -64,14 +65,13 @@ class MainWindow(QMainWindow):
                 pix = QtGui.QPixmap.fromImage(self.qim)
 
                 pos = item.pos
-                y = pos[1]
                 size = item.size
 
                 pixmap = QGraphicsPixmapItem(pix)
-                pixmap.setOffset(pos[0], y)
+                pixmap.setOffset(pos[0], pos[1])
                 self.scene.addItem(pixmap)
 
-            # self.update()
+            self.update()
 
         
     @pyqtSlot()
