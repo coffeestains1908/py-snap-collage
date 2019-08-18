@@ -1,6 +1,7 @@
 import sys
 import ctypes
-from mss.windows import MSS as mss
+import mss
+import mss.tools
 from PIL import Image
 from PIL.ImageQt import ImageQt
 import pyscreenshot as ImageGrab
@@ -10,20 +11,10 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 import sorter
+from pyrobot import Robot
 
 
-def screenshot(coords=None):
-    """returns PIL image of whole screen
-    :param coords (x1, y1, x2, y2)
-    """
-    if coords is None:
-        with mss() as sct:
-            filename = sct.shot(mon=-1)
-        im = Image.open(filename)
-        im = im.convert("RGBA")
-        return im
-    else:
-        return ImageGrab.grab(bbox=(coords))
+robot = Robot()
 
 
 class MainWindow(QWidget):
@@ -33,7 +24,7 @@ class MainWindow(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.title = 'JABS'
+        self.title = 'SnapCollage'
         self.left = 0
         self.top = 0
         self.width = 800
@@ -57,12 +48,12 @@ class MainWindow(QWidget):
         root.addLayout(topbar)
 
         button = QPushButton('Add New Snap')
-        button.setStyleSheet("padding: 20px 40px")
+        button.setStyleSheet("padding: 10px 30px")
         button.clicked.connect(self.on_click)
         topbar.addWidget(button)
 
         button = QPushButton('Clear All')
-        button.setStyleSheet("padding: 20px 40px")
+        button.setStyleSheet("padding: 10px 30px")
         topbar.addWidget(button)
         
         topbar.addStretch(1)
@@ -101,7 +92,10 @@ class Screenshot(QWidget):
     on_close = QtCore.pyqtSignal()
 
     def screenshot(self):
-        im = screenshot()
+        with mss.mss() as sct:
+            filename = sct.shot(mon=-1)
+        im = Image.open(filename)
+        im = im.convert("RGBA")
         qim = ImageQt(im)
         pix = QtGui.QPixmap.fromImage(qim)
         self.pix = pix
@@ -109,22 +103,22 @@ class Screenshot(QWidget):
     def __init__(self):
         super().__init__()
 
+        size = (ctypes.windll.user32.GetSystemMetrics(78), ctypes.windll.user32.GetSystemMetrics(79))
+
         self.snip = None
         self.dragstart = None
+        self.left = 0
+        self.top = 0
+        self.width = size[0]
+        self.height = size[1]
+        self.largest_rect = QRect(0, 0, self.width, self.height)
+        self.clip_rect = QRect(0, 0, 0, 0)
 
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint |
             QtCore.Qt.WindowStaysOnTopHint
         )
-        size = (ctypes.windll.user32.GetSystemMetrics(78), ctypes.windll.user32.GetSystemMetrics(79))
-        self.left = 0
-        self.top = 0
-        self.width = size[0]
-        self.height = size[1]
         self.setGeometry(self.left, self.top, self.width, self.height)
-
-        self.largest_rect = QRect(0, 0, self.width, self.height)
-        self.clip_rect = QRect(0, 0, 0, 0)
     
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -153,8 +147,7 @@ class Screenshot(QWidget):
     
     def mouseReleaseEvent(self, event):
         coords = (self.dragstart.x(), self.dragstart.y(), event.x(), event.y())
-        print(coords)
-        img = screenshot(coords)
+        img = robot.take_screenshot(coords)
         self.snip = img
         self.on_close.emit()
         self.dragstart = None
@@ -182,7 +175,6 @@ class Controller:
         self.window.isSnip = False
         
         if self.screenshot_window.snip is not None:
-            print("New image")
             im = self.screenshot_window.snip
             qim = ImageQt(im)
             self.window.images.append(qim)
