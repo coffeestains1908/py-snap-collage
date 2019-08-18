@@ -8,6 +8,7 @@ import pyscreenshot as ImageGrab
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5 import uic
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 import sorter
@@ -17,68 +18,61 @@ from pyrobot import Robot
 robot = Robot()
 
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
 
     show_screenshot = QtCore.pyqtSignal()
     close_screenshot = QtCore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
+        
+        scene = QGraphicsScene(self)
+        view = QGraphicsView(scene)
+        self.scene = scene
+        self.setCentralWidget(view)
+
         self.title = 'SnapCollage'
-        self.left = 0
-        self.top = 0
-        self.width = 800
-        self.height = 600
+
         self.images = []
-        self.initUI()
         self.isSnip = False
 
-    def initUI(self):
         self.setWindowTitle(self.title)
-        
-        qtRectangle = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
-        qtRectangle.moveCenter(centerPoint)
-        self.move(qtRectangle.topLeft())
-        
-        root = QVBoxLayout(self)
-        self.layout = root
-        
-        topbar = QHBoxLayout()
-        root.addLayout(topbar)
 
-        button = QPushButton('Add New Snap')
-        button.setStyleSheet("padding: 10px 30px")
-        button.clicked.connect(self.on_click)
-        topbar.addWidget(button)
-
-        button = QPushButton('Clear All')
-        button.setStyleSheet("padding: 10px 30px")
-        topbar.addWidget(button)
-        
-        topbar.addStretch(1)
-
-        image_cont = QStackedLayout()
-        self.image_cont = image_cont
-        root.addLayout(image_cont)
+        self.tools_ui()
+        self.snip_ui()
 
         self.show()
     
-    def draw_images(self):
-        sorted = sorter.sort(self.images)
+    def tools_ui(self):
+        # new snip button
+        new_snip = QAction('Add Snip', self)
+        new_snip.triggered.connect(self.on_click)
 
-        for item in sorted:
-            self.qim = item.image
-            pix = QtGui.QPixmap.fromImage(self.qim)
+        # toolbar
+        self.toolbar = self.addToolBar('Exit')
+        self.toolbar.addAction(new_snip)
+    
+    def snip_ui(self):
+        pass
 
-            pos = item.pos
-            size = item.size
+    def show_image(self):
+        if len(self.images):
+            sorted = sorter.sort(self.images)
 
-            lbl = QLabel()
-            lbl.setPixmap(pix)
-            lbl.move(pos[0], pos[1])
-            
-            self.image_cont.addWidget(lbl)
+            for item in sorted:
+                self.qim = item.image
+                pix = QtGui.QPixmap.fromImage(self.qim)
+
+                pos = item.pos
+                y = pos[1]
+                size = item.size
+
+                pixmap = QGraphicsPixmapItem(pix)
+                pixmap.setOffset(pos[0], y)
+                self.scene.addItem(pixmap)
+
+            # self.update()
+
         
     @pyqtSlot()
     def on_click(self):
@@ -86,6 +80,7 @@ class MainWindow(QWidget):
             self.close_screenshot.emit()
         else:
             self.show_screenshot.emit()
+
 
 class Screenshot(QWidget):
 
@@ -180,7 +175,8 @@ class Controller:
             self.window.images.append(qim)
 
         self.screenshot_window.close()
-        self.window.draw_images()
+        self.window.show_image()
+        self.window.show()
 
     def show_screenshot(self):
         self.screenshot_window = Screenshot()
@@ -192,8 +188,6 @@ class Controller:
 
         self.screenshot_window.screenshot()
         self.screenshot_window.show()
-
-        self.window.show()
 
 
 def main():
