@@ -1,6 +1,8 @@
 # py-snap-collage
 Small application that works like Window's snipping tool but can compile multiple images into one collage
 
+![](showcases/1.gif)
+
 There are many more things needed to be done:
 ## [Important]
 * Positioning images in PyQt (This can be configured in [sorter.py](sorter.py))
