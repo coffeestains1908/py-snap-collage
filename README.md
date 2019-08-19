@@ -1,6 +1,8 @@
 # py-snap-collage
 Small application that works like Window's snipping tool but can compile multiple images into one collage
 
+I was actually trying to find a project to learn Python, stumbled upon this idea when I wanted Window's Snipping Tool to be able to keep multiple images.
+
 ![](showcases/1.gif)
 
 There are many more things needed to be done:
