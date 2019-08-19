@@ -89,12 +89,14 @@ class MainWindow(QMainWindow):
         scene = QGraphicsScene(self)
         view = QGraphicsView(scene)
         self.scene = scene
+        self.view = view
         self.setCentralWidget(view)
 
         if len(self.images):
             sorted = sorter.sort(self.images)
+            images = sorted[0]
 
-            for item in sorted:
+            for item in images:
                 self.qim = item.image
                 pix = QtGui.QPixmap.fromImage(self.qim)
 
@@ -103,9 +105,10 @@ class MainWindow(QMainWindow):
 
                 pixmap = QGraphicsPixmapItem(pix)
                 pixmap.setOffset(pos[0], pos[1])
-                self.scene.addItem(pixmap)
+                scene.addItem(pixmap)
 
-            self.update()
+            # view.fitInView(scene.sceneRect(), Qt.KeepAspectRatio)
+            view.show()
 
         
     @pyqtSlot()
@@ -129,15 +132,15 @@ class Screenshot(QWidget):
         pix = QtGui.QPixmap.fromImage(qim)
         self.pix = pix
 
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
 
         size = (ctypes.windll.user32.GetSystemMetrics(78), ctypes.windll.user32.GetSystemMetrics(79))
 
         self.snip = None
-        self.dragstart = None
-        self.left = 0
-        self.top = 0
+        self.drag = None
+        self.left = x
+        self.top = y
         self.width = size[0]
         self.height = size[1]
         self.largest_rect = QRect(0, 0, self.width, self.height)
@@ -171,27 +174,33 @@ class Screenshot(QWidget):
             self.on_close.emit()
     
     def mousePressEvent(self, event):
-        if self.dragstart is None:
-            self.dragstart = event.pos()
+        if self.drag is None:
+            self.drag = (event.x(), event.y(), event.globalX(), event.globalY())
     
     def mouseReleaseEvent(self, event):
-        coords = (self.dragstart.x(), self.dragstart.y(), event.x(), event.y())
+        left = self.drag[2]
+        top = self.drag[3]
+        width = event.globalX()
+        height = event.globalY()
+        coords = (left, top, width, height)
+        print(coords)
         img = robot.take_screenshot(coords)
         self.snip = img
         self.on_close.emit()
-        self.dragstart = None
+        self.drag = None
     
     def mouseMoveEvent(self, event):
-        if (self.dragstart is not None):
-            width = event.x() - self.dragstart.x()
-            height = event.y() - self.dragstart.y()
-            self.clip_rect = QRect(self.dragstart.x(), self.dragstart.y(), width, height)
+        if (self.drag is not None):
+            width = event.x() - self.drag[0]
+            height = event.y() - self.drag[1]
+            self.clip_rect = QRect(self.drag[0], self.drag[1], width, height)
             self.repaint()
 
 
 class Controller:
 
-    def __init__(self):
+    def __init__(self, topX, topY):
+        self.topPos = (topX, topY)
         self.window = MainWindow()
         self.window.show_screenshot.connect(self.show_screenshot)
         self.window.close_screenshot.connect(self.close_screenshot)
@@ -213,7 +222,7 @@ class Controller:
         self.window.show()
 
     def show_screenshot(self):
-        self.screenshot_window = Screenshot()
+        self.screenshot_window = Screenshot(self.topPos[0], self.topPos[1])
         self.screenshot_window.on_close.connect(self.close_screenshot)
         self.window.isSnip = True
 
@@ -226,7 +235,23 @@ class Controller:
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    controller = Controller()
+
+    # determine coordinate (lowest x & y)
+    topX = 0
+    topY = 0
+
+    desktop = app.desktop()
+    desktop_count = desktop.screenCount()
+
+    for i in range(desktop_count):
+        geo = app.desktop().screenGeometry(i)
+        print(i, geo)
+        _x = geo.x()
+        _y = geo.y()
+        topX = _x if _x < topX else topX
+        topY = _y if _y < topY else topY
+    
+    controller = Controller(topX, topY)
     controller.show_main()
     sys.exit(app.exec_())
 
