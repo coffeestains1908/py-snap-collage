@@ -47,12 +47,40 @@ class MainWindow(QMainWindow):
     
     def tools_ui(self):
         # new snip button
-        new_snip = QAction('Add Snip', self)
+        new_snip = QAction('Add', self)
         new_snip.triggered.connect(self.on_click)
 
+        # clear button - placeholder
+        clear_snaps = QAction('Clear', self)
+
+        # copy button - placeholder
+        copy_snap = QAction('Copy', self)
+
+        # paste button - placeholder
+        paste_image = QAction('Paste', self)
+
         # toolbar
-        self.toolbar = self.addToolBar('Exit')
-        self.toolbar.addAction(new_snip)
+        toolbar = self.addToolBar('Tools')
+        toolbar.addAction(new_snip)
+        toolbar.addAction(clear_snaps)
+        toolbar.addAction(copy_snap)
+        toolbar.addAction(paste_image)
+
+        self.toolbar = toolbar
+        
+        # sorter - placeholder
+        sorter_label = QLabel("Sort Mode:  ")
+        sorter_combo = QComboBox(self)
+        sorter_combo.addItem("Linear")
+        sorter_combo.addItem("Plastique")
+        sorter_combo.addItem("Cleanlooks")
+
+        # configurebar
+        configurebar = self.addToolBar('Configure')
+        configurebar.addWidget(sorter_label)
+        configurebar.addWidget(sorter_combo)
+
+        self.configurebar = configurebar
     
     def snip_ui(self):
         pass
