@@ -27,7 +27,6 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.title = 'SnapCollage'
-        self.size = (350, 350)
 
         self.images = []
         self.isSnip = False
@@ -36,6 +35,13 @@ class MainWindow(QMainWindow):
 
         self.tools_ui()
         self.snip_ui()
+
+        # resize & center
+        self.setGeometry(0, 0, 400, self.toolbar.height())
+        qtRectangle = self.frameGeometry()
+        centerPoint = QDesktopWidget().availableGeometry().center()
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
 
         self.show()
     
