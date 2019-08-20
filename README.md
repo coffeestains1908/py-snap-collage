@@ -7,4 +7,5 @@ I was actually trying to find a project to learn Python, stumbled upon this idea
 * Multiple snaps
 * Linear arrangement
 * Drag & zoom
+
 ![](showcases/2.gif)
