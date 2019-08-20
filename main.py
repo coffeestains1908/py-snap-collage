@@ -178,13 +178,15 @@ class Screenshot(QWidget):
             self.drag = (event.x(), event.y(), event.globalX(), event.globalY())
     
     def mouseReleaseEvent(self, event):
-        left = self.drag[2]
-        top = self.drag[3]
-        width = event.globalX()
-        height = event.globalY()
-        coords = (left, top, width, height)
-        print(coords)
+        x1 = min(self.drag[2], event.globalX())
+        y1 = min(self.drag[3], event.globalY())
+        x2 = max(self.drag[2], event.globalX())
+        y2 = max(self.drag[3], event.globalY())
+
+        coords = (x1, y1, x2, y2)
+
         img = robot.take_screenshot(coords)
+
         self.snip = img
         self.on_close.emit()
         self.drag = None
