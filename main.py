@@ -2,9 +2,8 @@ import sys
 import ctypes
 import mss
 import mss.tools
-from PIL import Image
+from PIL import Image, ImageGrab
 from PIL.ImageQt import ImageQt
-import pyscreenshot as ImageGrab
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -59,6 +58,8 @@ class MainWindow(QMainWindow):
 
         # paste button - placeholder
         paste_image = QAction('Paste', self)
+        paste_image.setShortcut('Ctrl+V')
+        paste_image.triggered.connect(self.paste_image)
 
         # toolbar
         toolbar = self.addToolBar('Tools')
@@ -108,6 +109,11 @@ class MainWindow(QMainWindow):
         else:
             self.isSnip = True
             self.show_screenshot.emit()
+    
+    def paste_image(self):
+        img = ImageGrab.grabclipboard()
+        self.add_image(img)
+
 
 
 class Screenshot(QWidget):
