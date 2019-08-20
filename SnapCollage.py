@@ -44,6 +44,7 @@ class SnapImage(QGraphicsPixmapItem):
         super().__init__(pix)
         self.setPos(x, y)
         self.setAcceptHoverEvents(True)
+        self.setZValue(0)
 
     def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent'):
         QApplication.instance().setOverrideCursor(Qt.OpenHandCursor)
@@ -67,4 +68,5 @@ class SnapImage(QGraphicsPixmapItem):
 
     def mouseDoubleClickEvent(self, event: 'QGraphicsSceneMouseEvent'): pass
 
-    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent'): pass
+    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent'):
+        self.setZValue(0)
