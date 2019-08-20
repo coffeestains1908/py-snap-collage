@@ -52,6 +52,7 @@ class MainWindow(QMainWindow):
 
         # clear button - placeholder
         clear_snaps = QAction('Clear', self)
+        clear_snaps.triggered.connect(self.clear_images)
 
         # copy button - placeholder
         copy_snap = QAction('Copy', self)
@@ -110,6 +111,9 @@ class MainWindow(QMainWindow):
             # view.fitInView(scene.sceneRect(), Qt.KeepAspectRatio)
             view.show()
 
+    def clear_images(self):
+        self.images = []
+        self.show_image()
         
     @pyqtSlot()
     def on_click(self):
