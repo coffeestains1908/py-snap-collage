@@ -11,8 +11,8 @@ from PyQt5.QtCore import *
 from PyQt5 import uic
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
-import sorter
 from pyrobot import Robot
+from SnapCollage import *
 
 
 robot = Robot()
@@ -84,36 +84,22 @@ class MainWindow(QMainWindow):
         self.configurebar = configurebar
     
     def snip_ui(self):
-        pass
+        # self.root.addWidget(SnapImage())
+        snapview = SnapView()
+
+        self.snapview = snapview
+        self.snapview.display()
+        self.setCentralWidget(snapview)
 
     def show_image(self):
-        scene = QGraphicsScene(self)
-        view = QGraphicsView(scene)
-        self.scene = scene
-        self.view = view
-        self.setCentralWidget(view)
-
-        if len(self.images):
-            sorted = sorter.sort(self.images)
-            images = sorted[0]
-
-            for item in images:
-                self.qim = item.image
-                pix = QtGui.QPixmap.fromImage(self.qim)
-
-                pos = item.pos
-                size = item.size
-
-                pixmap = QGraphicsPixmapItem(pix)
-                pixmap.setOffset(pos[0], pos[1])
-                scene.addItem(pixmap)
-
-            # view.fitInView(scene.sceneRect(), Qt.KeepAspectRatio)
-            view.show()
+        self.snapview.display()
 
     def clear_images(self):
-        self.images = []
-        self.show_image()
+        self.snapview.reset()
+    
+    def add_image(self, im):
+        qim = ImageQt(im)
+        self.snapview.add_image(qim)
         
     @pyqtSlot()
     def on_click(self):
@@ -219,9 +205,7 @@ class Controller:
         self.window.isSnip = False
         
         if self.screenshot_window.snip is not None:
-            im = self.screenshot_window.snip
-            qim = ImageQt(im)
-            self.window.images.append(qim)
+            self.window.add_image(self.screenshot_window.snip)
 
         self.screenshot_window.close()
         self.window.show_image()
