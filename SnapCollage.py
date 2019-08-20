@@ -12,6 +12,7 @@ class SnapView(QGraphicsView):
         self.setScene(self.scene)
 
         self.images = []
+        self.currentZ = 0
     
     def reset(self):
         self.images = []
@@ -35,7 +36,7 @@ class SnapView(QGraphicsView):
                 pos = item.pos
                 size = item.size
 
-                snapimage = SnapImage(pix, pos[0], pos[1])
+                snapimage = SnapImage(self, pix, pos[0], pos[1])
                 self.scene.addItem(snapimage)
     
     def mousePressEvent(self, event):
@@ -61,12 +62,14 @@ class SnapView(QGraphicsView):
 
 
 class SnapImage(QGraphicsPixmapItem):
-    def __init__(self, pix, x, y):
+    def __init__(self, parent, pix, x, y):
         super().__init__(pix)
         self.setPos(x, y)
         self.setAcceptHoverEvents(True)
         self.setZValue(0)
         self.setTransformationMode(Qt.SmoothTransformation)
+        
+        self.parent = parent
 
     def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent'):
         QApplication.instance().setOverrideCursor(Qt.OpenHandCursor)
@@ -85,8 +88,9 @@ class SnapImage(QGraphicsPixmapItem):
         
         self.setPos(QPointF(x, y))
 
-    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent'): 
-        self.setZValue(1)
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent'):
+        self.parent.currentZ += 1
+        self.setZValue(self.parent.currentZ)
 
     def mouseDoubleClickEvent(self, event: 'QGraphicsSceneMouseEvent'): pass
 
