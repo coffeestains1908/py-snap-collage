@@ -37,6 +37,27 @@ class SnapView(QGraphicsView):
 
                 snapimage = SnapImage(pix, pos[0], pos[1])
                 self.scene.addItem(snapimage)
+    
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MidButton: # or Qt.MiddleButton
+            self.__prevMousePos = event.pos()
+        else:
+            super(SnapView, self).mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.MidButton: # or Qt.MiddleButton
+            offset = self.__prevMousePos - event.pos()
+            self.__prevMousePos = event.pos()
+
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() + offset.y())
+            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + offset.x())
+        else:
+            super(SnapView, self).mouseMoveEvent(event)
+        
+    def wheelEvent(self,event):
+        y = event.angleDelta().y()
+        adj = (y/120) * 0.1
+        self.scale(1+adj, 1+adj)
 
 
 class SnapImage(QGraphicsPixmapItem):
@@ -45,6 +66,7 @@ class SnapImage(QGraphicsPixmapItem):
         self.setPos(x, y)
         self.setAcceptHoverEvents(True)
         self.setZValue(0)
+        self.setTransformationMode(Qt.SmoothTransformation)
 
     def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent'):
         QApplication.instance().setOverrideCursor(Qt.OpenHandCursor)
@@ -68,5 +90,4 @@ class SnapImage(QGraphicsPixmapItem):
 
     def mouseDoubleClickEvent(self, event: 'QGraphicsSceneMouseEvent'): pass
 
-    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent'):
-        self.setZValue(0)
+    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent'): pass
