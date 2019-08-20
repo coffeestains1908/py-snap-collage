@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
     def tools_ui(self):
         # new snip button
         new_snip = QAction('Add', self)
-        new_snip.triggered.connect(self.on_click)
+        new_snip.triggered.connect(self.new_snip)
 
         # clear button - placeholder
         clear_snaps = QAction('Clear', self)
@@ -101,11 +101,12 @@ class MainWindow(QMainWindow):
         qim = ImageQt(im)
         self.snapview.add_image(qim)
         
-    @pyqtSlot()
-    def on_click(self):
+    def new_snip(self):
         if self.isSnip:
+            self.isSnip = False
             self.close_screenshot.emit()
         else:
+            self.isSnip = True
             self.show_screenshot.emit()
 
 
@@ -199,7 +200,7 @@ class Controller:
 
     def show_main(self):
         self.window.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.window.show()
+        self.window.showMaximized()
     
     def close_screenshot(self):
         self.window.isSnip = False
@@ -209,16 +210,14 @@ class Controller:
 
         self.screenshot_window.close()
         self.window.show_image()
-        self.window.show()
+        self.window.setWindowOpacity(1)
 
     def show_screenshot(self):
+        self.window.setWindowOpacity(0)
+        # time.sleep(0.15)
+
         self.screenshot_window = Screenshot(self.topPos[0], self.topPos[1])
         self.screenshot_window.on_close.connect(self.close_screenshot)
-        self.window.isSnip = True
-
-        self.window.hide()
-        time.sleep(0.18)
-
         self.screenshot_window.screenshot()
         self.screenshot_window.show()
 
@@ -235,7 +234,6 @@ def main():
 
     for i in range(desktop_count):
         geo = app.desktop().screenGeometry(i)
-        print(i, geo)
         _x = geo.x()
         _y = geo.y()
         topX = _x if _x < topX else topX
